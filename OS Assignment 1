@@ -1,0 +1,75 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include<sys/types.h> 
+#include<sys/wait.h> 
+
+#define BUFFER 1024
+
+int main(){
+
+// initializing variables
+char* argv[100];        
+char* path= "/bin/";    
+char newpath[20];      
+int argc;               
+char cmd[BUFFER];
+while(1){
+
+printf("Shell input -> ");                    
+
+//getting input for our shell command
+if(!fgets(cmd, BUFFER, stdin))
+break;
+size_t length = strlen(cmd);
+if (cmd[length - 1] == '\n')
+cmd[length - 1] = '\0';
+
+
+//Checking if the command that is entered is "exit" command
+if(strcmp(cmd, "exit")==0){            
+printf("Exit has been called! Goodbye!");
+break;
+}
+
+//Splitting the input command into different strings to sort them into the exec command
+char *token;                  
+token = strtok(cmd," ");
+int i=0;
+while(token!=NULL){
+argv[i]=token;      
+token = strtok(NULL," ");
+i++;
+}
+argv[i]=NULL;                   
+argc=i;                          
+//for(i=0; i<argc; i++){
+//printf("%s\n", argv[i]);      
+//}
+strcpy(newpath, path);          
+strcat(newpath, argv[0]);        
+for(i=0; i<strlen(newpath); i++){ 
+if(newpath[i]=='\n'){      
+newpath[i]='\0';
+}
+}
+
+// checking if the command that is entered is CD or not
+if (strcmp(argv[0],"cd")==0){
+chdir(argv[1]);
+}       
+
+// creating two processes to run in parallel so that we can execute the exec command.
+int pid= fork();     
+if(pid==0){          
+execvp(newpath,argv);
+fprintf(stderr, "Could not be executed, check input and try again\n");
+}
+else
+{                    
+wait(NULL);
+printf("Command ended")
+}
+}
+} 
