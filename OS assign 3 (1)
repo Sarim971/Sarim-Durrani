@@ -1,0 +1,87 @@
+#include <stdio.h>
+#include <pthread.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/syscall.h>
+#include <unistd.h>  
+#include <time.h>  
+#include <sys/ipc.h> 
+#include <sys/shm.h> 
+#include <string.h>
+  
+
+
+
+int potentialCpatients;
+int CoronaPatients;
+
+void *threadFunction (void *);
+
+int main (void)
+{
+	sem_t corona;
+	sem_init(&corona, 0, 0); 
+   int n=0,i=0,Ret=0;
+   pthread_t *thread;
+
+   printf("Enter the number for threads of corona patients\n");
+   scanf("%d",&n);
+	
+	potentialCpatients=n;
+	
+	
+	while(PotentialCpatients!=0 && CoronaPatients !=0)
+	{
+	
+	n=potentialCpatients;
+   thread = (pthread_t *) malloc (n*sizeof(pthread_t));
+
+   for (i=0;i<n;i++){
+       Ret=pthread_create(&thread[i],NULL,CheckCoronaPatient,(void *)i);
+       if(Ret!=0){
+           printf("pthread_create failed in %d attempt\n",i);
+           exit(EXIT_FAILURE);        
+       }
+   }
+
+   for(i=0;i<n;i++){
+        Ret=pthread_join(thread[i],NULL);
+            if(Ret!=0){
+               printf("pthread_join failed in %d attempt\n",i);
+               exit(EXIT_FAILURE);        
+            }
+   }
+}
+}
+
+void *CheckCoronaPatient (void *arg)
+{
+	
+	int cp=(int*) arg;
+    srand(time(0)); 
+ if (rand()%2)==0){
+ 	--potentialCpatients;
+ 	++CoronaPatients;
+ 	sem_post(&corona);
+ printf("Patient number %d is a corona patient", cp);
+ }
+ else 
+ {
+ 	srand(time(0));
+ 	if(rand()%2!=0)
+ 	{
+		  	--potentialCpatients;
+		   printf("Patient number %d is not tested postive for covid 19", cp);
+		  
+		  }
+	else{
+			--potentialCpatients;
+ 			++CoronaPatients;
+ 			sem_post(&corona);
+ 			 printf("Patient number %d is a corona patient", cp);
+		
+	} 
+ 
+ }
+}
+  
