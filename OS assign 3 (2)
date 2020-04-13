@@ -1,0 +1,112 @@
+#include <stdio.h> 
+#include <stdlib.h> 
+#include <unistd.h> 
+#include <time.h> 
+#include <sys/types.h> 
+#include <sys/ipc.h> 
+#include <sys/shm.h> 
+#include <stdio.h> 
+#include <string.h>
+  
+char buffer1[10];
+char buffer2[10];  
+
+
+
+int main() 
+{  
+	sem_t empty1;
+	sem_t empty2;
+	sem_t empty3;
+	sem_t full1;
+	sem_t full2;
+
+
+    sem_init(&empty1, 1, 1); 
+    
+    sem_init(&empty2, 1, 1); 
+    
+    sem_init(&empty3, 1, 0); 
+    
+    sem_init(&full1, 1, 0); 
+    
+	sem_init(&full2, 1, 0); 
+	
+	
+	
+ int fd = open("file-1.txt", O_RDONLY | O_CREAT);  
+ if (fd<0)
+ {
+ 	printf("Error opening file # 1");
+ }
+ 
+  int fd1 = open("file-2.txt", O_RDONLY | O_CREAT);  
+ if (fd1<0)
+ {
+ 	printf("Error opening file # 2");
+ }
+ pid_t pid1=fork();
+ pid_t pid2=fork();
+ 
+ if (pid1<0)
+ {
+ 	
+ 	printf("Error in fork # 1");
+ 	
+ }
+ if (pid2<0)
+ {
+ 	
+	 printf("Error in fork # 2");
+ 	
+ 
+ }
+  
+  
+  
+  
+  
+  // process 1
+  if (pid1==0)
+  {
+  	while(1){
+	 sem_wait(&empty1);	
+	  read(fd, buffer1, 10);
+		sem_post(&full1); 
+  }
+  }
+  
+  
+  // process 2
+  if (pid1>0)
+  {
+  	while(1){
+	 
+ 	 sem_wait(&empty3);
+  	read(fd1, buffer1, 10);
+  	sem_post(&full1);
+  }
+}
+  
+  
+  // process 3
+  if (pid2==0)
+  {
+  	while(1){
+	  
+	  sem_wait(&full1);
+	  sem_wait(&empty2)
+	  strcpy(buffer1,buffer2);
+	  sem_post(&empty3);
+	  sem_post(&full2);
+  }
+  
+  // process 4
+  if (pid2>0)
+  {
+  	sem_wait(&full2);
+	  printf("%s",buffer2);
+		sem_post(empty2);  
+  }
+}
+}
